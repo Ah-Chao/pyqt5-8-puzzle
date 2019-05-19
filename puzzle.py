@@ -1,117 +1,106 @@
 #! python
 # coding:utf-8
 # Author:VChao
-# Date:2019/05/19
+# Date: 2019/05/19
 
-import sys
-import random
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+import copy
 
 
-class PuzzleGame(QMainWindow):
-    def __init__(self):
-        super(PuzzleGame, self).__init__()
-
-        self.resize(300, 300)
-        screen = QDesktopWidget().screenGeometry()
-        size = self.geometry()
-        self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
-
-        self.container = Container(self)
-        self.setCentralWidget(self.container)
-        self.show()
-
-
-# 现在设想一下，我是想通过设置9个label来进行这个部分的内容
-# 但是这个容器先是Frame
-
-
-class Container(QFrame):
+class Puzzle(object):
     key_map = {
         'LEFT': 1,
         'RIGHT': 2,
         'DOWN': 3,
         'UP': 4
     }
-    KEY2MAP = {
-        Qt.Key_Left: key_map['LEFT'],
-        Qt.Key_Right: key_map['RIGHT'],
-        Qt.Key_Down: key_map['DOWN'],
-        Qt.Key_Up: key_map['UP']
-    }
 
-    def __init__(self, parent):
-        super(Container, self).__init__(parent)
-        self.setFrameStyle(QFrame.StyledPanel)
-        self.setFocusPolicy(Qt.StrongFocus)
+    def __init__(self, pos_list):
+        # deepcopy 非常耗时
+        # self.pos_list = copy.deepcopy(pos_list)
+        self.pos_list = pos_list[:]
+        self.goal = [1,2,3,4,5,6,7,8,0]
+        # self.goal.pop(0)
+        # self.goal.append(0)
+    def __eq__(self, other):
+        if other.pos_list == self.pos_lsit:
+            return True
+        else:
+            return False
 
-        self.pos_list = [i for i in range(9)]
-        random.shuffle(self.pos_list)
-        self.goal = [i for i in range(9)]
-        self.pixmap = []
-        self.lbl = []
+    def __str__(self):
+        return str(self.pos_list)
 
-        for i in range(9):
-            self.pixmap.append(QPixmap("sources/num_" + str(i) + ".png"))
-            self.lbl.append(QLabel(self))
-            self.lbl[i].setPixmap(self.pixmap[i])
-            self.lbl[i].setScaledContents(True)
+    def get_states(self):
+        return self.pos_list
 
-        self.init_ui()
+    def get_actions(self):
+        pos_0 = self.pos_list.index(0)
 
-    def init_ui(self):
+        pos_map = {
+            0: [1, 4],
+            1: [1, 2, 4],
+            2: [2, 4],
+            3: [1, 3, 4],
+            4: [1, 2, 3, 4],
+            5: [2, 3, 4],
+            6: [1, 3],
+            7: [1, 2, 3],
+            8: [2, 3]
+        }
+        return pos_map[pos_0]
 
-        for i in range(9):
-            # python3 的整除问题
-            # print(i, (i % 3) * 100,(i//3) * 100)
-            self.lbl[self.pos_list[i]].setGeometry((i % 3) * 100, (i // 3) * 100,100,100)
+    def state_success(self):
 
-    def move_pic(self,key):
+        if self.pos_list == self.goal:
+            return True
+        else:
+            return False
 
-        direction = self.KEY2MAP[key]
+    def state_change_for_game(self,direction):
         pos_0 = self.pos_list.index(0)
         if direction == self.key_map['LEFT']:
-            if (pos_0 + 1) % 3 == 0:
-                return
-            self.pos_list[pos_0], self.pos_list[pos_0 + 1] = \
-                self.pos_list[pos_0 + 1],self.pos_list[pos_0]
+            if (pos_0 + 1) % 3 != 0:
+                self.pos_list[pos_0], self.pos_list[pos_0 + 1] = \
+                    self.pos_list[pos_0 + 1], self.pos_list[pos_0]
 
         elif direction == self.key_map['RIGHT']:
-            if pos_0 % 3 == 0:
-                return
-            self.pos_list[pos_0], self.pos_list[pos_0 - 1] = \
-                self.pos_list[pos_0 - 1],self.pos_list[pos_0]
+            if pos_0 % 3 != 0:
+                self.pos_list[pos_0], self.pos_list[pos_0 - 1] = \
+                    self.pos_list[pos_0 - 1], self.pos_list[pos_0]
         elif direction == self.key_map['UP']:
-            if pos_0 // 3 == 2:
-                return
-            self.pos_list[pos_0], self.pos_list[pos_0 + 3] = \
-                self.pos_list[pos_0 + 3], self.pos_list[pos_0]
+            if pos_0 // 3 != 2:
+                self.pos_list[pos_0], self.pos_list[pos_0 + 3] = \
+                    self.pos_list[pos_0 + 3], self.pos_list[pos_0]
         elif direction == self.key_map['DOWN']:
-            if pos_0 // 3 == 0:
-                return
-            self.pos_list[pos_0], self.pos_list[pos_0 - 3] = \
-                self.pos_list[pos_0 - 3], self.pos_list[pos_0]
-        print(self.pos_list)
-        self.init_ui()
-        if self.pos_list == self.goal:
-            reply = QMessageBox.information(self,
-                                            "成功",
-                                            "成功达到目的状态，是否继续游戏",
-                                            QMessageBox.Yes | QMessageBox.No)
+            if pos_0 // 3 != 0:
+                self.pos_list[pos_0], self.pos_list[pos_0 - 3] = \
+                    self.pos_list[pos_0 - 3], self.pos_list[pos_0]
+        return Puzzle(self.get_states())
 
-    def keyPressEvent(self, event):
-        key = event.key()
-        if key in [Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up]:
-            self.move_pic(key)
+    def state_change(self, direction):
+        pos_list = self.pos_list[:]
+        pos_0 = pos_list.index(0)
+        if direction == self.key_map['LEFT']:
+            if (pos_0 + 1) % 3 != 0:
+                pos_list[pos_0], pos_list[pos_0 + 1] = \
+                    pos_list[pos_0 + 1], pos_list[pos_0]
+
+        elif direction == self.key_map['RIGHT']:
+            if pos_0 % 3 != 0:
+                pos_list[pos_0], pos_list[pos_0 - 1] = \
+                    pos_list[pos_0 - 1], pos_list[pos_0]
+        elif direction == self.key_map['UP']:
+            if pos_0 // 3 != 2:
+                pos_list[pos_0], pos_list[pos_0 + 3] = \
+                    pos_list[pos_0 + 3], pos_list[pos_0]
+        elif direction == self.key_map['DOWN']:
+            if pos_0 // 3 != 0:
+                pos_list[pos_0], pos_list[pos_0 - 3] = \
+                    pos_list[pos_0 - 3], pos_list[pos_0]
+        return Puzzle(pos_list)
 
 
-def main():
-    app = QApplication([])
-    launch_game = PuzzleGame()
-    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
-    main()
+    print(Puzzle([i for i in range(9)]).state_success())
