@@ -32,6 +32,7 @@ class Queue(object):
             return True
         return False
 
+
 class Stack(Queue):
     def pop(self, index=-1):
         return self.data_queue.pop(index)
@@ -110,14 +111,11 @@ def first_search(state, queue):
     while len(node_queue) > 0:
 
         tmp_node = node_queue.pop()
-        print(tmp_node)
         for action in tmp_node.get_actions():
             new_state = tmp_node.state_change(action)
             tmp_node.add_child(new_state)
 
         for one_node in tmp_node.children:
-            #if not one_node.state_normal():
-            #    continue
             if one_node.state_success():
                 return one_node.action_list()
 
@@ -125,7 +123,7 @@ def first_search(state, queue):
                 continue
             else:
                 explored_cor.add(str(one_node))
-                #if one_node in node_queue:
+                # if one_node in node_queue:
                 #    print("*" * 20)
                 node_queue.add(one_node)
     return None
@@ -145,7 +143,7 @@ def greedy_first_search(state):
 
 def get_move_sequence(puzzle_state):
     try:
-        #print(puzzle_state)
+        # print(puzzle_state)
         sol = breadth_first_search(puzzle_state)
         return sol
     except Exception as e:
@@ -155,7 +153,7 @@ def get_move_sequence(puzzle_state):
 if __name__ == "__main__":
     pass
 
-    one = Puzzle([1,2,3])
+    one = Puzzle([1, 2, 3])
     test_queue = Queue()
     test_queue.add(one)
     if one in test_queue:
