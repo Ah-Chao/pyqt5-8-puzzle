@@ -49,7 +49,7 @@ class Container(QFrame):
 
         self.pos_list = [i for i in range(9)]
         random.shuffle(self.pos_list)
-
+        self.goal = [i for i in range(9)]
         self.pixmap = []
         self.lbl = []
 
@@ -95,6 +95,11 @@ class Container(QFrame):
                 self.pos_list[pos_0 - 3], self.pos_list[pos_0]
         print(self.pos_list)
         self.init_ui()
+        if self.pos_list == self.goal:
+            reply = QMessageBox.information(self,
+                                            "成功",
+                                            "成功达到目的状态，是否继续游戏",
+                                            QMessageBox.Yes | QMessageBox.No)
 
     def keyPressEvent(self, event):
         key = event.key()
