@@ -4,25 +4,33 @@
 # Date: 2019/05/19
 
 import copy
+import random
+
+key_map = {
+    'LEFT': 1,
+    'RIGHT': 2,
+    'DOWN': 3,
+    'UP': 4
+}
 
 
 class Puzzle(object):
-    key_map = {
-        'LEFT': 1,
-        'RIGHT': 2,
-        'DOWN': 3,
-        'UP': 4
-    }
 
-    def __init__(self, pos_list):
+
+    def __init__(self, pos_list = None):
         # deepcopy 非常耗时
         # self.pos_list = copy.deepcopy(pos_list)
+        if pos_list is None:
+            pos_list = [i for i in range(9)]
+            random.shuffle(pos_list)
+
         self.pos_list = pos_list[:]
-        self.goal = [1,2,3,4,5,6,7,8,0]
-        # self.goal.pop(0)
+        self.goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+
         # self.goal.append(0)
+
     def __eq__(self, other):
-        if other.pos_list == self.pos_lsit:
+        if other.pos_list == self.pos_list:
             return True
         else:
             return False
@@ -56,50 +64,37 @@ class Puzzle(object):
         else:
             return False
 
-    def state_change_for_game(self,direction):
-        pos_0 = self.pos_list.index(0)
-        if direction == self.key_map['LEFT']:
-            if (pos_0 + 1) % 3 != 0:
-                self.pos_list[pos_0], self.pos_list[pos_0 + 1] = \
-                    self.pos_list[pos_0 + 1], self.pos_list[pos_0]
+    @staticmethod
+    def state_change_(pos_list, direction):
 
-        elif direction == self.key_map['RIGHT']:
-            if pos_0 % 3 != 0:
-                self.pos_list[pos_0], self.pos_list[pos_0 - 1] = \
-                    self.pos_list[pos_0 - 1], self.pos_list[pos_0]
-        elif direction == self.key_map['UP']:
-            if pos_0 // 3 != 2:
-                self.pos_list[pos_0], self.pos_list[pos_0 + 3] = \
-                    self.pos_list[pos_0 + 3], self.pos_list[pos_0]
-        elif direction == self.key_map['DOWN']:
-            if pos_0 // 3 != 0:
-                self.pos_list[pos_0], self.pos_list[pos_0 - 3] = \
-                    self.pos_list[pos_0 - 3], self.pos_list[pos_0]
-        return Puzzle(self.get_states())
-
-    def state_change(self, direction):
-        pos_list = self.pos_list[:]
         pos_0 = pos_list.index(0)
-        if direction == self.key_map['LEFT']:
+        if direction == key_map['LEFT']:
             if (pos_0 + 1) % 3 != 0:
                 pos_list[pos_0], pos_list[pos_0 + 1] = \
                     pos_list[pos_0 + 1], pos_list[pos_0]
 
-        elif direction == self.key_map['RIGHT']:
+        elif direction == key_map['RIGHT']:
             if pos_0 % 3 != 0:
                 pos_list[pos_0], pos_list[pos_0 - 1] = \
                     pos_list[pos_0 - 1], pos_list[pos_0]
-        elif direction == self.key_map['UP']:
+
+        elif direction == key_map['UP']:
             if pos_0 // 3 != 2:
                 pos_list[pos_0], pos_list[pos_0 + 3] = \
                     pos_list[pos_0 + 3], pos_list[pos_0]
-        elif direction == self.key_map['DOWN']:
+
+        elif direction == key_map['DOWN']:
             if pos_0 // 3 != 0:
                 pos_list[pos_0], pos_list[pos_0 - 3] = \
                     pos_list[pos_0 - 3], pos_list[pos_0]
-        return Puzzle(pos_list)
+        return pos_list
 
+    def state_change_for_game(self, direction):
+        self.state_change_(self.pos_list, direction)
 
+    def state_change(self, direction):
+        pos_list = self.pos_list[:]
+        return Puzzle(self.state_change_(pos_list, direction))
 
 
 if __name__ == "__main__":
